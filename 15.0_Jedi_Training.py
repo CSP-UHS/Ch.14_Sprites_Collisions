@@ -90,6 +90,7 @@ class MyGame(arcade.Window):
         for trooper in trooper_hit_list:
             trooper.kill() # order 67
             arcade.play_sound(self.BB8.laser_sound)
+            self.score += 1
 
 
 #-----Main Function--------
