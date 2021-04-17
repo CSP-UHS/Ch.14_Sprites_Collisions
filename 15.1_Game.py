@@ -47,9 +47,13 @@ class Player(arcade.Sprite):
                 self.slowing = False
 
     def update(self):
-        self.change_y -= (8/60)
+        if self.grounded!=True:
+            self.change_y -= (8/60)
         self.center_x += self.change_x
         self.center_y += self.change_y
+
+        if self.change_y > 6:
+            self.change_y = 6
 
         if self.left < 0:
             self.left = 0
@@ -57,8 +61,8 @@ class Player(arcade.Sprite):
         elif self.right > SW:
             self.right = SW
             #arcade.play_sound(self.laser)
-        if self.bottom < 80:
-            self.bottom = 80
+        if self.bottom < 70:
+            self.bottom = 70
             self.grounded = True
             #arcade.play_sound(self.laser)
         elif self.top > SH:
@@ -152,11 +156,23 @@ class MyGame(arcade.Window):
 
 
         #this is the list of the grass blocks
-        self.worldlist = arcade.SpriteList()
+        self.worldlist = arcade.SpriteList() #floor
         for i in range(int(SW / 32)):
             self.floor = World("game_assets/worldtiles/grass.png")
             self.floor.center_x = (32 / 2) + (32 * i)
             self.floor.center_y = 80 -16
+            self.worldlist.append(self.floor)
+
+        for i in range(int(300 / 32)): #lower Platform
+            self.floor = World("game_assets/worldtiles/grass.png")
+            self.floor.center_x = (32 / 2) + (32 * i)
+            self.floor.center_y = 200
+            self.worldlist.append(self.floor)
+
+        for i in range(int(300 / 32)): #Upper Platform
+            self.floor = World("game_assets/worldtiles/grass.png")
+            self.floor.center_x = (32 / 2) + (32 * i) + 400
+            self.floor.center_y = 320
             self.worldlist.append(self.floor)
 
         for i in range(int(SW / 32)):
@@ -218,6 +234,17 @@ class MyGame(arcade.Window):
             troop.kill()
             self.score +=1
             arcade.play_sound(self.BB8.laser)
+        #logic for detecting if player is on the ground
+        groundcheck = arcade.check_for_collision_with_list(self.BB8,self.worldlist)
+        if groundcheck != []:
+            #print("this wont work")
+            for obj in groundcheck:
+                if abs(obj.top - self.BB8.bottom) < 7:
+                    self.BB8.bottom = obj.top
+                    self.BB8.grounded = True
+        else:
+            self.BB8.grounded = False
+
 
 
     def on_key_press(self, symbol, modifiers: int):
