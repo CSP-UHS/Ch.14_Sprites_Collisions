@@ -1,6 +1,6 @@
-#Sign your name:________________
- 
-#You will use the starting code below and build the program "BB8 Attack" as you go through Chapter 15.
+# Sign your name: Geni
+
+# You will use the starting code below and build the program "BB8 Attack" as you go through Chapter 15.
 
 
 import random
@@ -13,6 +13,7 @@ trooper_count = 40
 SW = 800
 SH = 600
 SP = 4
+
 
 class Player(arcade.Sprite):
     def __init__(self):
@@ -35,6 +36,7 @@ class Player(arcade.Sprite):
             self.top = SH
             arcade.play_sound(self.laser_sound)
 
+
 class Trooper(arcade.Sprite):
     def __init__(self):
         super().__init__("Images/stormtrooper.png", trooper_scale)
@@ -44,7 +46,8 @@ class Trooper(arcade.Sprite):
     def update(self):
         pass
 
-#------MyGame Class--------------
+
+# ------MyGame Class--------------
 class MyGame(arcade.Window):
 
     def __init__(self, SW, SH, title):
@@ -61,17 +64,16 @@ class MyGame(arcade.Window):
 
         # Create our Player
         self.BB8 = Player()
-        self.BB8.center_x = SW/2
-        self.BB8.center_y = SH/2
+        self.BB8.center_x = SW / 2
+        self.BB8.center_y = SH / 2
         self.player_list.append(self.BB8)
 
         # Create a lot of troopers
         for i in range(trooper_count):
             trooper = Trooper()
-            trooper.center_x = random.randrange(trooper.w/2, SW - trooper.w/2)
-            trooper.center_y = random.randrange(trooper.h/2, SH - trooper.h/2)
+            trooper.center_x = random.randrange(trooper.w // 2, SW - trooper.w // 2)
+            trooper.center_y = random.randrange(trooper.h // 2, SH - trooper.h // 2)
             self.trooper_list.append(trooper)
-
 
     def on_draw(self):
         arcade.start_render()
@@ -82,23 +84,47 @@ class MyGame(arcade.Window):
         output = f"Score: {self.score:}"
         arcade.draw_text(output, 10, 20, arcade.color.BLACK, 14)
 
+        # print how many troopers are left
+        tc = f"Troopers left: {len(self.trooper_list)}"
+        arcade.draw_text(tc, 10, 40, arcade.color.BLACK, 14)
+
     def on_update(self, dt):
         self.player_list.update()
         self.trooper_list.update()
 
         trooper_hit_list = arcade.check_for_collision_with_list(self.BB8, self.trooper_list)
         for trooper in trooper_hit_list:
-            trooper.kill() # order 67
+            trooper.kill()  # order 67
             arcade.play_sound(self.BB8.laser_sound)
             self.score += 1
 
+        if len(self.trooper_list) == 0:
+            self.reset()
 
-#-----Main Function--------
+    def on_key_press(self, key, modifiers):
+        if key == arcade.key.LEFT:
+            self.BB8.change_x = -SP
+        elif key == arcade.key.RIGHT:
+            self.BB8.change_x = SP
+        elif key == arcade.key.UP:
+            self.BB8.change_y = SP
+        elif key == arcade.key.DOWN:
+            self.BB8.change_y = -SP
+
+    def on_key_release(self, key, modifiers):
+        if key == arcade.key.LEFT or key == arcade.key.RIGHT:
+            self.BB8.change_x = 0
+        elif key == arcade.key.UP or key == arcade.key.DOWN:
+            self.BB8.change_y = 0
+
+
+# -----Main Function--------
 def main():
-    window = MyGame(SW,SH,"BB8 Attack")
+    window = MyGame(SW, SH, "BB8 Attack")
     window.reset()
     arcade.run()
 
-#------Run Main Function-----
+
+# ------Run Main Function-----
 if __name__ == "__main__":
     main()
