@@ -85,6 +85,9 @@ class MyGame(arcade.Window):
         output = f"Score: {self.score}"
         arcade.draw_text(output,10,20, arcade.color.BLACK, 14)
 
+        tc = f'Troopers Left: {len(self.trooper_list)}'
+        arcade.draw_text(tc,100,20,arcade.color.BLACK)
+
     def on_update(self, dt):
         self.player_list.update()
         self.trooper_list.update()
@@ -94,6 +97,9 @@ class MyGame(arcade.Window):
             troop.kill()
             self.score +=1
             arcade.play_sound(self.BB8.laser)
+
+        if len(self.trooper_list) < 1:
+            self.reset()
 
     def on_key_press(self, symbol, modifiers: int):
         print(symbol)
