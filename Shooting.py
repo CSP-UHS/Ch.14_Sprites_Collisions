@@ -17,6 +17,7 @@ class Player(arcade.Sprite):
     def __init__(self):
         super().__init__("Images/bb8.png", BB8_scale)
         self.laser_sound = arcade.load_sound("sounds/laser.mp3")
+        self.explosion = arcade.load_sound("sounds/explosion.mp3")
 
     def update(self):
         self.center_x += self.change_x
@@ -107,40 +108,39 @@ class MyGame(arcade.Window):
         BB8_hit = arcade.check_for_collision_with_list(self.BB8, self.trooper_list)
         if len(BB8_hit) > 0:
             self.BB8.kill()
+            arcade.play_sound(self.BB8.explosion)
             self.Gameover = True
 
         for bullet in self.bullets:
-            bullet_hit_list = arcade.check_for_collision_with_list(bullet, self.trooper_list)
-            if len(bullet_hit_list) > 0:
-                arcade.play_sound(bullet.explosion)
+            hit_list = arcade.check_for_collision_with_list(bullet, self.trooper_list)
+            if len(hit_list) > 0:
+                arcade.play_sound(self.BB8.explosion)
                 bullet.kill()
 
-
-
-
-        for trooper in trooper_hit_list:
-            trooper.kill()  # order 67
-            arcade.play_sound(self.BB8.laser_sound)
-            self.score += 1
-
-        if len(self.trooper_list) == 0:
-            self.reset()
+            for trooper in hit_list:
+                trooper.kill()
+                self.score += 2
 
     def on_key_press(self, key, modifiers):
         if key == arcade.key.LEFT:
             self.BB8.change_x = -SP
         elif key == arcade.key.RIGHT:
             self.BB8.change_x = SP
-        elif key == arcade.key.UP:
-            self.BB8.change_y = SP
-        elif key == arcade.key.DOWN:
-            self.BB8.change_y = -SP
+        elif key == arcade.key.P:
+            self.reset()
+        elif key == arcade.key.SPACE and not self.Gameover:
+            # instantiate a bullet
+            self.bullet = Bullet()
+            self.bullet.center_x = self.BB8.center_x
+            self.bullet.bottom = self.BB8.top
+            self.bullet.angle = 90
+            self.bullets.append(self.bullet)
+            self.score -= 1
+            arcade.play_sound(self.BB8.laser_sound)
 
     def on_key_release(self, key, modifiers):
         if key == arcade.key.LEFT or key == arcade.key.RIGHT:
             self.BB8.change_x = 0
-        elif key == arcade.key.UP or key == arcade.key.DOWN:
-            self.BB8.change_y = 0
 
 
 # -----Main Function--------
