@@ -11,6 +11,23 @@ bullet_speed = 10
 SW = 800
 SH = 600
 SP = 4
+EXPLOSION_TEXTURE_COUNT = 50
+
+
+class Explosion(arcade.Sprite):
+    def __init__(self, texture_list):
+        super().__init__("Images/explosions/explosion0000.png")
+
+        self.current_texture = 0
+        self.textures = texture_list
+        self.explosion_sound = arcade.load_sound("sounds/explosion.mp3")
+
+    def update(self):
+        self.current_texture += 1
+        if self.current_texture < len(self.textures):
+            self.set_texture(self.current_texture)
+        else:
+            self.kill()
 
 
 class Player(arcade.Sprite):
@@ -40,6 +57,17 @@ class Trooper(arcade.Sprite):
             self.center_y = random.randrange(SH + self.h, SH * 2)
 
 
+class Enemy_Bullet(arcade.Sprite):
+    def __init__(self):
+        super().__init__("Images/rbullet.png", bullet_scale)
+
+    def update(self):
+        self.center_y -= bullet_speed
+        self.angle = -90
+        if self.top < 0:
+            self.kill()
+
+
 class Bullet(arcade.Sprite):
     def __init__(self):
         super().__init__("Images/bullet.png", bullet_scale)
@@ -59,10 +87,17 @@ class MyGame(arcade.Window):
         arcade.set_background_color(arcade.color.SKY_BLUE)
         self.set_mouse_visible(False)
 
+        self.explosion_texture_list = []
+        for i in range(EXPLOSION_TEXTURE_COUNT):
+            texture_name = f"Images/explosions/explosion{i:04}.png"
+            self.explosion_texture_list.append(arcade.load_texture(texture_name))
+
     def reset(self):
         self.player_list = arcade.SpriteList()
         self.trooper_list = arcade.SpriteList()
         self.bullets = arcade.SpriteList()
+        self.ebullets = arcade.SpriteList()
+        self.explosions = arcade.SpriteList()
 
         # VARIABLES
         self.score = 0
@@ -86,6 +121,8 @@ class MyGame(arcade.Window):
         self.player_list.draw()
         self.trooper_list.draw()
         self.bullets.draw()
+        self.ebullets.draw()
+        self.explosions.draw()
 
         # print the score
         the_score = f"Score: {self.score:}"
@@ -94,21 +131,39 @@ class MyGame(arcade.Window):
         # Draw Game Over Screen
         if self.Gameover == True:
             arcade.draw_rectangle_filled(SW // 2, SH // 2, SW, SH, arcade.color.BLACK)
-            arcade.draw_text("Game Over: Press P to Play Again!", SW / 2 - 50, SH / 2 - 20, (0, 255, 0), 14)
+            arcade.draw_text("Game Over: Press P to Play Again!", SW / 2 - 50, SH / 2 - 20, (0, 255, 0), 14,
+                             align="center", anchor_x="center")
 
     def on_update(self, dt):
         self.player_list.update()
         self.trooper_list.update()
         self.bullets.update()
+        self.ebullets.update()
+        self.explosions.update()
 
         if len(self.trooper_list) == 0:
             self.Gameover = True
 
         # Detect BB8 colliding with trooper
         BB8_hit = arcade.check_for_collision_with_list(self.BB8, self.trooper_list)
-        if len(BB8_hit) > 0:
+        if len(BB8_hit) > 0 and not self.Gameover:
             self.BB8.kill()
             arcade.play_sound(self.BB8.explosion)
+            self.Gameover = True
+
+        # Randomly drop bombs
+        for trooper in self.trooper_list:
+            if random.randrange(800) == 0 and not self.Gameover:
+                ebullet = Enemy_Bullet
+                ebullet.center_x = trooper.center_x
+                ebullet.top = trooper.bottom
+                self.ebullets.append(ebullet)
+
+        bb8_bombed = arcade.check_for_collision_with_list(self.BB8, self.ebullets)
+        if len(bb8_bombed) > 0 and not self.Gameover:
+            arcade.play_sound(self.BB8.explosion)
+            self.BB8.kill()
+            bb8_bombed[0].kill()
             self.Gameover = True
 
         for bullet in self.bullets:
@@ -116,6 +171,9 @@ class MyGame(arcade.Window):
             if len(hit_list) > 0:
                 arcade.play_sound(self.BB8.explosion)
                 bullet.kill()
+                explosion = Explosion(self.explosion_texture_list)
+                explosion.center_x = hit_list[0].center_x
+                self.explosions.append(explosion)
 
             for trooper in hit_list:
                 trooper.kill()
@@ -145,7 +203,7 @@ class MyGame(arcade.Window):
 
 # -----Main Function--------
 def main():
-    window = MyGame(SW, SH, "BB8 Shooting")
+    window = MyGame(SW, SH, "BB8 Explosion")
     window.reset()
     arcade.run()
 
