@@ -169,10 +169,11 @@ class MyGame(arcade.Window):
         for bullet in self.bullets:
             hit_list = arcade.check_for_collision_with_list(bullet, self.trooper_list)
             if len(hit_list) > 0:
-                arcade.play_sound(self.BB8.explosion)
+                arcade.play_sound(bullet.explosion)
                 bullet.kill()
                 explosion = Explosion(self.explosion_texture_list)
                 explosion.center_x = hit_list[0].center_x
+                explosion.center_y = hit_list[0].center_y
                 self.explosions.append(explosion)
 
             for trooper in hit_list:
