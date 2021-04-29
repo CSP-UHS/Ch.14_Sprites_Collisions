@@ -1,8 +1,3 @@
-# Sign your name: Geni
-
-# You will use the starting code below and build the program "BB8 Attack" as you go through Chapter 15.
-
-
 import random
 import arcade
 
