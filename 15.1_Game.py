@@ -25,6 +25,7 @@ trooper_count = 15
 SW = 800
 SH = 600
 SP = 4
+LevelTime = 30
 
 
 class Player(arcade.Sprite):
@@ -47,6 +48,7 @@ class Player(arcade.Sprite):
                 self.slowing = False
 
     def update(self):
+        global LevelTime
         if self.grounded!=True:
             self.change_y -= (8/60)
         else:
@@ -64,9 +66,8 @@ class Player(arcade.Sprite):
         elif self.right > SW:
             self.right = SW
             #arcade.play_sound(self.laser)
-        if self.bottom < 70:
-            self.bottom = 70
-            self.grounded = True
+        if self.top < 0:
+            LevelTime = 0
             #arcade.play_sound(self.laser)
         elif self.top > SH:
             self.top = SH
@@ -110,7 +111,7 @@ class Trooper(arcade.Sprite):
     def update(self):
         self.center_y += -1
 
-    def update_animation(self, delta_time: float = 1/15):
+    def update_animation(self, delta_time: float = 1/12):
         #print("test")
         self.textureframe += 1
         if self.textureframe > 5:
@@ -211,7 +212,7 @@ class MyGame(arcade.Window):
 
         self.BB8 = Player()
         self.BB8.center_x = SW / 2
-        self.BB8.center_y = SH / 2
+        self.BB8.center_y = 400
         self.player_list.append(self.BB8)
 
         for i in range(trooper_count):
@@ -251,12 +252,24 @@ class MyGame(arcade.Window):
 
         arcade.draw_rectangle_filled(SW/2,5,SW,30,arcade.color.BLACK)
         output = f"Score: {self.score}"
+        timeremaining = f"Time Left: {LevelTime:.2f}"
         arcade.draw_text(output,10,1, arcade.color.WHITE, 14)
+        arcade.draw_text(timeremaining, 100, 1, arcade.color.WHITE, 14)
+
+        if LevelTime <= 0:
+            arcade.draw_rectangle_filled(SW/2,SH/2,SW,SH,arcade.color.BLACK)
+            arcade.draw_text("Game Over!",SW/2,SH/2,arcade.color.WHITE,30,align= "center",anchor_x="center",anchor_y= "center")
 
     def on_update(self, dt):
+        global LevelTime
+
+
+
         self.time +=1
         if self.time == 4:
             self.time = 0
+            self.trooper_list.update_animation()
+            LevelTime -= (4 / 60)
 
         self.cooldown -= 1
         if self.cooldown < 0:
@@ -265,7 +278,7 @@ class MyGame(arcade.Window):
         #self.BB8.angle = - 0.5 * (angle(self.BB8.change_x,self.BB8.change_y+8) + 90)
 
 
-        self.trooper_list.update_animation()
+
         self.player_list.update()
         self.trooper_list.update()
 
@@ -279,6 +292,7 @@ class MyGame(arcade.Window):
             self.score +=1
             arcade.play_sound(self.BB8.laser)
             self.newcoin()
+            LevelTime += 0.5
 
         for plat in self.worldlist:
             plat.center_y += -1
@@ -355,7 +369,7 @@ class MyGame(arcade.Window):
 
 #-----Main Function--------
 def main():
-    window = MyGame(SW,SH,"BB8 Attack")
+    window = MyGame(SW,SH,"Endless Platforms")
     window.reset()
     arcade.run()
 
