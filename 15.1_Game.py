@@ -67,7 +67,7 @@ class Player(arcade.Sprite):
             self.right = SW
             #arcade.play_sound(self.laser)
         if self.top < 0:
-            LevelTime = 0
+            LevelTime = -1
             #arcade.play_sound(self.laser)
         elif self.top > SH:
             self.top = SH
@@ -160,6 +160,8 @@ class MyGame(arcade.Window):
         arcade.set_background_color(arcade.color.SKY_BLUE)
 
     def reset(self):
+        global LevelTime
+        LevelTime = 30
 
 
         #this is the list of the grass blocks
@@ -258,7 +260,7 @@ class MyGame(arcade.Window):
 
         if LevelTime <= 0:
             arcade.draw_rectangle_filled(SW/2,SH/2,SW,SH,arcade.color.BLACK)
-            arcade.draw_text("Game Over!",SW/2,SH/2,arcade.color.WHITE,30,align= "center",anchor_x="center",anchor_y= "center")
+            arcade.draw_text("Game Over! \n Press R to restart",SW/2,SH/2,arcade.color.WHITE,30,align= "center",anchor_x="center",anchor_y= "center")
 
     def on_update(self, dt):
         global LevelTime
@@ -345,9 +347,12 @@ class MyGame(arcade.Window):
                 self.BB8.center_x += 1
                 self.BB8.change_y = 6
                 self.BB8.grounded = False
+        if symbol == 114:
+            if LevelTime <= 0:
+                self.reset()
 
     def on_key_release(self, symbol: int, modifiers: int):
-        print(symbol)
+        #print(symbol)
         # if symbol ==119:
         #     self.BB8.change_y = 0
         #
